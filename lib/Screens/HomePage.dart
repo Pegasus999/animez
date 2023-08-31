@@ -103,49 +103,30 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 10),
-            FutureBuilder(
-                future: API.getContent(path: path),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done &&
-                      animes == null) {
-                    return Expanded(
-                      child: Center(
-                        child: Text("لا يوجد نتيجة"),
-                      ),
-                    );
-                  } else if (snapshot.connectionState ==
-                          ConnectionState.waiting ||
-                      animes == null) {
-                    return Expanded(
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  } else if (snapshot.hasData) {
-                    return Flexible(
-                        child: SizedBox(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GridView.builder(
-                          controller: _controller,
-                          itemCount: animes!.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 0.65,
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemBuilder: (context, index) => _buildTile(index),
+            Flexible(
+                child: SizedBox(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: animes == null
+                    ? Constant.buildLoading()
+                    : GridView.builder(
+                        controller: _controller,
+                        itemCount: animes!.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: 0.65,
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
                         ),
+                        itemBuilder: (context, index) => index == animes!.length
+                            ? Container(
+                                height: 100,
+                                child: Constant.buildLoading(),
+                              )
+                            : _buildTile(index),
                       ),
-                    ));
-                  } else {
-                    return Center(
-                      child: Text("Error has occured"),
-                    );
-                  }
-                })
+              ),
+            ))
           ],
         ),
       ),

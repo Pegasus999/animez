@@ -1,6 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="gg.reyna.zanime">
     <application
-        android:label="zanime"
+        android:label="Anime Zone"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -29,6 +29,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data android:name="applovin.sdk.key"
+            android:value="6VByya6AELQKoTVLfxZZGF13uO9pl0RB1E3xy1QBw5O5BCxWqLJ4mHQmpnoElhdNb5-cCxdA87gaUGxQGxcG_V" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

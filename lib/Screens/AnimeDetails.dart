@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zanime/Constants.dart';
 import 'package:zanime/Models/Anime.dart';
+import 'package:applovin_max/applovin_max.dart';
 import 'package:zanime/Models/Details.dart';
 import 'package:zanime/Models/Servers.dart';
+import 'dart:math';
 import 'package:zanime/Screens/WebViewPage.dart';
 import 'package:zanime/Services/API.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +28,7 @@ class _DetailsPageState extends State<DetailsPage> {
   List<Server>? servers;
   List<Anime> favorites = [];
   List<Anime> saved = [];
+  var _interstitialRetryAttempt = 0;
   bool isFav = false;
   bool isSav = false;
   @override
@@ -33,6 +36,9 @@ class _DetailsPageState extends State<DetailsPage> {
     // TODO: implement initState
     super.initState();
     loadDetails();
+    initializeInterstitialAds();
+    AppLovinMAX.createBanner("1321a537abe8fcc1", AdViewPosition.bottomCenter);
+    AppLovinMAX.showBanner("1321a537abe8fcc1");
     _getFavorites();
     _getSaved();
   }
@@ -340,6 +346,7 @@ class _DetailsPageState extends State<DetailsPage> {
   _buildServer(int index) {
     return GestureDetector(
       onTap: () {
+        _showAd();
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -373,6 +380,50 @@ class _DetailsPageState extends State<DetailsPage> {
     });
   }
 
+  _showAd() async {
+    bool isReady = (await AppLovinMAX.isInterstitialReady("f9c015d070affc28"))!;
+
+    if (isReady) {
+      AppLovinMAX.showInterstitial("f9c015d070affc28");
+    } else {
+      await Future.delayed(
+        Duration(seconds: 5),
+        () {
+          AppLovinMAX.loadInterstitial("f9c015d070affc28");
+        },
+      );
+    }
+  }
+
+  void initializeInterstitialAds() {
+    AppLovinMAX.setInterstitialListener(InterstitialListener(
+      onAdLoadedCallback: (ad) {
+        // Interstitial ad is ready to be shown. AppLovinMAX.isInterstitialReady(_interstitial_ad_unit_id) will now return 'true'
+
+        // Reset retry attempt
+        _interstitialRetryAttempt = 0;
+      },
+      onAdLoadFailedCallback: (adUnitId, error) {
+        // Interstitial ad failed to load
+        // We recommend retrying with exponentially higher delays up to a maximum delay (in this case 64 seconds)
+        _interstitialRetryAttempt = _interstitialRetryAttempt + 1;
+
+        int retryDelay = pow(2, min(6, _interstitialRetryAttempt)).toInt();
+
+        Future.delayed(Duration(milliseconds: retryDelay * 1000), () {
+          AppLovinMAX.loadInterstitial("f9c015d070affc28");
+        });
+      },
+      onAdDisplayedCallback: (ad) {},
+      onAdDisplayFailedCallback: (ad, error) {},
+      onAdClickedCallback: (ad) {},
+      onAdHiddenCallback: (ad) {},
+    ));
+
+    // Load the first interstitial
+    AppLovinMAX.loadInterstitial("f9c015d070affc28");
+  }
+
   _buildTile(int index) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
@@ -385,19 +436,6 @@ class _DetailsPageState extends State<DetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selected = true;
-                        episodeNumber = index + 1;
-                        episode = details!.episodes[index];
-                      });
-                    },
-                    child: FaIcon(
-                      FontAwesomeIcons.download,
-                      color: Constant.white,
-                    ),
-                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -465,7 +503,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           color: Colors.white,
                         ),
                         Text(
-                          "مشاهدة",
+                          "الحلقات",
                           style: TextStyle(
                               color: Colors.white,
                               fontFamily: "Ahlan",

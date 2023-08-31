@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as parser;
@@ -8,6 +10,14 @@ import 'package:zanime/Models/Servers.dart';
 class API {
   static const url_active = "https://tenz.surge.sh/gogo.json";
   static String url_base = "https://animelek.me";
+
+  static Future isActive() async {
+    // var response = await http.get(Uri.parse(url_active));
+    // return (response.statusCode == 200)
+    //     ? jsonDecode(response.body)["active"]
+    //     : true;
+    return true;
+  }
 
   static Future getContent({required String path, int page = 1}) async {
     var response =
